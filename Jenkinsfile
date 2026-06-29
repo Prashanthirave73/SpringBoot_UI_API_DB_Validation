@@ -16,17 +16,23 @@ pipeline {
             }
         }
 
+        stage('Build Project') {
+            steps {
+                bat 'mvn clean compile'
+            }
+        }
+
         stage('Start Spring Boot Application') {
             steps {
                 bat '''
-                start "" cmd /c "mvn clean spring-boot:run"
+                start "" cmd /c "mvn spring-boot:run"
                 '''
             }
         }
 
         stage('Wait For Application Startup') {
             steps {
-                bat 'timeout /t 40'
+                sleep(time: 40, unit: 'SECONDS')
             }
         }
 
@@ -40,10 +46,8 @@ pipeline {
     post {
 
         always {
-            junit 'target/surefire-reports/*.xml'
-
-            archiveArtifacts artifacts: '**/*.png',
-                    allowEmptyArchive: true
+            junit allowEmptyResults: true,
+                  testResults: 'target/surefire-reports/*.xml'
         }
 
         success {
