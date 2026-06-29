@@ -1,0 +1,39 @@
+# Maven
+target/
+
+# TestNG Reports
+test-output/
+
+# Logs
+logs/
+
+# Screenshots
+screenshots/
+
+# Reports
+reports/
+extent-report/
+
+# Allure
+allure-results/
+allure-report/
+
+# IDE Files
+.idea/
+.vscode/
+.settings/
+.project
+.classpath
+
+# IntelliJ
+*.iml
+
+# Compiled Java files
+*.class
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env

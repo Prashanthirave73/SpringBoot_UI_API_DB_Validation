@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automation Practice App</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #17202a;
+            background: #f5f7fa;
+        }
+
+        main {
+            width: min(1000px, calc(100% - 32px));
+            margin: 32px auto;
+        }
+
+        section {
+            background: #ffffff;
+            border: 1px solid #d8dee8;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        h1, h2 {
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            margin: 14px 0 6px;
+            font-weight: 700;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #abb7c4;
+            border-radius: 6px;
+            font-size: 16px;
+        }
+
+        button {
+            margin-top: 16px;
+            padding: 10px 16px;
+            border: 0;
+            border-radius: 6px;
+            background: #1f6feb;
+            color: #ffffff;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #d8dee8;
+            text-align: left;
+        }
+
+        .error {
+            color: #b42318;
+            min-height: 24px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+        }
+    </style>
+</head>
+<body>
+<main>
+    <h1>Automation Practice App</h1>
+
+    <section id="login-section">
+        <h2>Login</h2>
+        <label for="email">Email</label>
+        <input id="email" data-testid="email" type="email" autocomplete="username">
+        <label for="password">Password</label>
+        <input id="password" data-testid="password" type="password" autocomplete="current-password">
+        <button id="login-btn" data-testid="login-button" type="button">Login</button>
+        <p id="login-message" data-testid="login-message" class="error"></p>
+    </section>
+
+    <section id="home-section" class="hidden">
+        <h2>Home</h2>
+        <div class="profile-grid">
+            <p>Username: <strong id="display-name" data-testid="display-name"></strong></p>
+            <p>Email: <strong id="display-email" data-testid="display-email"></strong></p>
+            <p>Mobile: <strong id="display-mobile" data-testid="display-mobile"></strong></p>
+            <p>Address: <strong id="display-address" data-testid="display-address"></strong></p>
+        </div>
+        <button id="refresh-profile" data-testid="refresh-profile" type="button">Refresh Profile</button>
+        <button id="my-orders" data-testid="my-orders" type="button">My Orders</button>
+    </section>
+
+    <section id="orders-section" class="hidden">
+        <h2>My Orders</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Order ID</th>
+                <th>Products</th>
+                <th>Total</th>
+            </tr>
+            </thead>
+            <tbody id="orders-body" data-testid="orders-body"></tbody>
+        </table>
+    </section>
+</main>
+
+<script>
+    let currentUser = null;
+
+    const byId = (id) => document.getElementById(id);
+
+    async function request(path, options = {}) {
+        const response = await fetch(path, {
+            headers: { "Content-Type": "application/json" },
+            ...options
+        });
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+        return response.json();
+    }
+
+    function renderProfile(user) {
+        currentUser = user;
+        byId("display-name").textContent = user.name;
+        byId("display-email").textContent = user.email;
+        byId("display-mobile").textContent = user.mobile;
+        byId("display-address").textContent = user.address;
+        byId("home-section").classList.remove("hidden");
+    }
+
+    async function login() {
+        byId("login-message").textContent = "";
+        try {
+            const user = await request("/login", {
+                method: "POST",
+                body: JSON.stringify({
+                    email: byId("email").value,
+                    password: byId("password").value
+                })
+            });
+            renderProfile(user);
+        } catch (error) {
+            byId("home-section").classList.add("hidden");
+            byId("orders-section").classList.add("hidden");
+            byId("login-message").textContent = "Login failed";
+        }
+    }
+
+    async function refreshProfile() {
+        if (!currentUser) {
+            return;
+        }
+        const user = await request(`/users/${currentUser.id}`);
+        renderProfile(user);
+    }
+
+    async function loadOrders() {
+        if (!currentUser) {
+            return;
+        }
+        const orders = await request(`/users/${currentUser.id}/orders`);
+        const rows = orders.map(order => {
+            const products = order.items
+                .map(item => `${item.productName} x${item.quantity}`)
+                .join(", ");
+            return `<tr data-testid="order-row">
+                <td data-testid="order-id">${order.orderId}</td>
+                <td data-testid="order-products">${products}</td>
+                <td data-testid="order-total">${Number(order.totalAmount).toFixed(2)}</td>
+            </tr>`;
+        });
+        byId("orders-body").innerHTML = rows.join("");
+        byId("orders-section").classList.remove("hidden");
+    }
+
+    byId("login-btn").addEventListener("click", login);
+    byId("refresh-profile").addEventListener("click", refreshProfile);
+    byId("my-orders").addEventListener("click", loadOrders);
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="API-UI-DB Automation Suite" parallel="tests" thread-count="2">
+    <listeners>
+        <listener class-name="framework.TestListener"/>
+    </listeners>
+    <test name="User Lifecycle E2E">
+        <classes>
+            <class name="api.tests.UserLifecycleE2ETest"/>
+        </classes>
+    </test>
+</suite>

@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Ava Sharma",
+    "email": "ava.sharma.${timestamp}@mail.test",
+    "password": "Pass@123",
+    "mobile": "9000001001",
+    "address": "12 Lake Road, Pune"
+  }
+]

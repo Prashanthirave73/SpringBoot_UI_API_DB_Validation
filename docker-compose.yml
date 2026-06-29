@@ -1,0 +1,16 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: automation_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: automation_db
+      MYSQL_USER: automation
+      MYSQL_PASSWORD: automation
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "automation", "-pautomation"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
